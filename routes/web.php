@@ -4,6 +4,7 @@
 use App\Models\Agent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 Route::get('/agent/create', function () {
     Agent::create(['name' => 'AliBot', 'role' => 'Assistant']);
@@ -36,3 +37,37 @@ Route::get('/agents/lazy', function () {
         echo $agent->name . '<br>';
     }
 });
+
+Route::get('/agents/cursor', function() {
+    foreach(Agent::where('active', true)->cursor() as $agent) {
+        echo $agent->name
+    }
+});
+
+Route::get('/agents/chunkById', function () {
+    Agent::chunkById(100, function(Collection $agents) {
+        foreach($agents as $agent) {
+            echo $agent->name
+        }
+    });
+});
+
+Route::get('/agents/lazyById', function (){
+    foreach (Agent::lazyById() as $agent) {
+        echo $agent->name
+    }
+});
+
+Route::get('/agents/sybquery', function () {
+    $results = Agent::addSelect([
+        'latest_name' => Agent::select('name')
+        ->whereColumn('agents.id', 'agents.id')
+        ->orderByDesc('id')
+        ->limit(1)
+    ])->get()
+
+        return $results
+    
+});
+
+
